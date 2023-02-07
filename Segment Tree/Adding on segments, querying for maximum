@@ -1,0 +1,43 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+const int N = 1e5 + 10;
+int t[4*N];
+int lazy[4*N];
+
+void push(int v){
+    t[2*v] += lazy[v];
+    lazy[2*v] += lazy[v];
+    t[2*v + 1] += lazy[v];
+    lazy[2*v + 1] += lazy[v];
+    lazy[v] = 0;
+}
+
+void update(int v, int tl, int tr, int l, int r, int add){
+    if(l > r){
+        return;
+    }
+    if(tl == l && tr == r){
+        t[v] += add;
+        lazy[v] += add;
+    }
+    else{
+        push(v);
+        int tm = (tl + tr) / 2;
+        update(2*v, tl, tm, l, min(r,tm), add);
+        update(2*v + 1, tm + 1, tr, max(l, tm+1), r, add);
+        t[v] = max(t[2*v], t[2*v + 1]);
+    }
+}
+
+int query(int v, int tl, int tr, int l, int r){
+    if(l > r){
+        return -1e9;
+    }
+    if(l <= tl && tr <= r){
+        return t[v];
+    }
+    push(v);
+    int tm = (tl + tr) / 2;
+    return max(query(2*v, tl, tm, l, min(r,tm)), query(2*v + 1, tm + 1, tr, max(l,tm+1), r));
+}
