@@ -1,0 +1,91 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+const int N = 1e5 + 10;
+// int t[N];
+string s;
+vector<vector<int>> t(4*N,vector<int>(26,0));
+
+vector<int> combine(vector<int>& a, vector<int>& b){
+    vector<int> c(26,0);
+    for(int i=0;i<26;i++){
+        c[i] = a[i] + b[i];
+    }
+    return c;
+}
+
+int count(vector<int>& a){
+    int cnt = 0;
+    for(int i=0;i<26;i++){
+        if(a[i] != 0) cnt++;
+    }
+    return cnt;
+}
+void build(int v, int tl, int tr){
+    if(tl == tr){
+        t[v][s[tl] - 'a'] = 1;
+    }
+    else{
+        int tm = (tl + tr) / 2;
+        build(v*2, tl, tm);
+        build(2*v + 1, tm + 1, tr);
+        t[v] = combine(t[2*v], t[2*v + 1]);
+    }
+}
+
+vector<int> get_distinct(int v,int tl,int tr,int l,int r){
+    if(l > r) {
+       vector<int> v(26,0);
+       return v;
+    }
+    if(l == tl && r == tr){
+        return (t[v]);
+    }
+    int tm = (tl + tr) / 2;
+    vector<int> a = get_distinct(2*v, tl, tm, l, min(r,tm));
+    vector<int> b = get_distinct(2*v+1, tm + 1, tr, max(l,tm + 1), r);
+
+    return combine(a,b);
+}
+
+void update(int v, int tl, int tr, int pos, char new_char){
+    if(tl == tr){
+        t[v][s[pos] - 'a'] -= 1;
+        s[pos] = new_char;
+        t[v][s[pos] - 'a'] += 1;
+    }
+    else{
+        int tm = (tl + tr) / 2;
+        if(pos <= tm){
+            update(2*v, tl, tm, pos, new_char);
+        }
+        else{
+            update(2*v + 1, tm + 1, tr, pos, new_char);
+        }
+        t[v] = combine(t[2*v], t[2*v + 1]);
+    }
+}
+
+int main(){
+    cin>>s;
+    int n = s.length();
+    build(1,0,n-1);
+    int q;
+    cin>>q;
+    while(q--){
+        int type;
+        cin>>type;
+        if(type == 1){
+            int pos;
+            char val;
+            cin>>pos>>val;
+            update(1,0,n-1,pos-1,val);
+        }
+        else{
+            int l,r;
+            cin>>l>>r;
+            vector<int> v = get_distinct(1,0,n-1,l-1,r-1);
+            cout<<count(v)<<'\n';
+        }
+    }
+}
